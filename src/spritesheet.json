@@ -1,0 +1,35 @@
+{
+	"frames": {
+		"output-onlinegiftools.png": {
+			"frame": {
+				"x": 1,
+				"y": 1,
+				"w": 5000,
+				"h": 281
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 5000,
+				"h": 281
+			},
+			"sourceSize": {
+				"w": 5000,
+				"h": 281
+			}
+		}
+	},
+	"meta": {
+		"app": "http://www.codeandweb.com/texturepacker",
+		"version": "1.0",
+		"image": "spritesheet.png",
+		"format": "RGBA8888",
+		"size": {
+			"w": 5002,
+			"h": 283
+		},
+		"scale": "1"
+	}
+}

@@ -1,0 +1,156 @@
+* {
+  cursor: url('cursor_outline_yellow.png'), auto;
+}
+body {
+  font-family: "Jacquard 12", system-ui;
+  font-weight: 500;
+  font-style: normal;
+}
+.App {
+  text-align: center;
+  background-image: url("pixelated_table-transformed.jpeg");
+  background-size: contain;
+  background-position: center;
+
+}
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+
+  z-index: 1000; /* Adjust z-index as needed */
+}
+.modal-content {
+  background-color: white;
+  width: 25vw;
+  height: 40vh;
+  color: black;
+  padding: 20px;
+  border-radius: 5px; 
+
+}
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+.book{
+  height: 80vh;
+  width: 70vw;
+  cursor: none;
+ 
+}
+
+.overlay-container {
+  position: relative;
+}
+.ribbon {
+  position: relative;
+}
+
+.title {
+  position: absolute;
+  bottom: 6%;
+  font-size: 38px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white; /* Assuming the ribbon is a dark color */
+}
+.player-title-left{
+  margin-top: 1rem;
+  justify-content: flex-start;
+}
+.player-title-right{
+  margin-top: 1rem;
+  justify-content: flex-end;
+}
+.player-health-bar-left {
+  display: flex;
+  position: absolute;
+  bottom: 20%;
+  left: 20%; 
+  width: 300px;
+  height: 10px;
+  background-color: #ccc;
+  border-radius: 5px;
+}
+.player-health-bar-right {
+  display: flex;
+  position: absolute;
+  bottom: 20%;
+  right: 20%; 
+  width: 300px;
+  height: 10px;
+  background-color: #ccc;
+  border-radius: 5px;
+}
+
+.health-bar-fill {
+  height: 100%;
+  background-color: red;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 80vh;
+  width: 70vw;
+}
+.books{
+  position: relative;
+   cursor: none;
+}
+.player1 {
+  height:50vh;
+  position: absolute;
+  top: 40%;
+  left: 25%;
+  transform: translate(-50%, -50%);
+}
+.player2 {
+  height:70vh;
+  position: absolute;
+  top: 50%;
+  left: 75%;
+  transform: translate(-50%, -50%);
+}
+.gameContainer{
+  position:absolute;
+  top:25%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

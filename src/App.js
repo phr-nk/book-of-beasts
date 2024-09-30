@@ -5,15 +5,18 @@ import player1 from "./player1.png";
 import player2 from "./player2.png";
 import beer from "./beer.png";
 import ribbon from "./Red_Ribbon.png";
-import luteTheme from "./lute_theme.mp3";
-import luteTheme2 from "./lute_theme_2.mp3";
+import luteTheme from "./lute_theme_2.mp3";
+import luteTheme2 from "./lute_theme.mp3";
 import luteTheme3 from "./lute_theme_3.mp3";
-import ChessBoard from "./Chessboard";
+import ChessBoard from "./Chessboard/Chessboard";
 import { useState, useMemo, useEffect, useRef } from "react";
 import * as React from "react";
 import { BlurFilter, TextStyle } from "pixi.js";
 import * as PIXI from "pixi.js"; // Import PixiJS
+import MedievalBeast from "./components/MedievalBeast/MedievalBeast";
 import { Stage, Container, Sprite, Text } from "@pixi/react";
+import ballFace from "./beasts/birdBallFace.png";
+import falconGuy from "./beasts/falconGuy.png";
 import "./App.css";
 
 const useDrag = ({ x, y }) => {
@@ -160,11 +163,11 @@ function App() {
             options={{ backgroundColor: 0x5c3523 }}
           >
             <Container>
-              <ChessBoard width={550} height={500} />
-              <DraggableBunny x={100} scale={0.5} />
+              {/* <ChessBoard width={550} height={500} /> */}
+              <MedievalBeast image={ballFace}></MedievalBeast>
+              <MedievalBeast image={falconGuy}></MedievalBeast>
               <DraggableBunny x={300} scale={0.2} />
               <DraggableBunny x={500} scale={0.3} />
-              <DraggableBunny x={700} scale={0.3} />
             </Container>
           </Stage>
         </div>

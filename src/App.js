@@ -16,41 +16,21 @@ import * as PIXI from "pixi.js"; // Import PixiJS
 import MedievalBeast from "./components/MedievalBeast/MedievalBeast";
 import { Stage, Container, Sprite, Text } from "@pixi/react";
 import ballFace from "./beasts/birdBallFace.png";
-import falconGuy from "./beasts/falconGuy.png";
+import jesterDawg from "./beasts/JesterDog.png";
 import "./App.css";
 
-const useDrag = ({ x, y }) => {
-  const sprite = React.useRef();
-  const [isDragging, setIsDragging] = React.useState(false);
-  const [position, setPosition] = React.useState({ x, y });
+const checkCollision = (beast1, beast2) => {
+  const bounds1 = beast1.getBounds(); // Get bounding box of beast1
+  const bounds2 = beast2.getBounds(); // Get bounding box of beast2
 
-  const onDown = React.useCallback(() => setIsDragging(true), []);
-  const onUp = React.useCallback(() => setIsDragging(false), []);
-  const onMove = React.useCallback(
-    (e) => {
-      if (isDragging && sprite.current) {
-        setPosition(e.data.getLocalPosition(sprite.current.parent));
-      }
-    },
-    [isDragging, setPosition]
+  // Check for axis-aligned bounding box collision
+  return (
+    bounds1.x < bounds2.x + bounds2.width &&
+    bounds1.x + bounds1.width > bounds2.x &&
+    bounds1.y < bounds2.y + bounds2.height &&
+    bounds1.y + bounds1.height > bounds2.y   
+
   );
-
-  return {
-    ref: sprite,
-    interactive: true,
-    pointerdown: onDown,
-    pointerup: onUp,
-    pointerupoutside: onUp,
-    pointermove: onMove,
-    alpha: isDragging ? 0.5 : 1,
-    anchor: 0.5,
-    position,
-  };
-};
-const DraggableBunny = ({ x = 400, y = 300, ...props }) => {
-  const bind = useDrag({ x, y });
-
-  return <Sprite image={beer} scale={0.001} {...bind} {...props} />;
 };
 
 function App() {
@@ -63,8 +43,31 @@ function App() {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [showModal, setShowModal] = useState(true);
   const audioRef = useRef(null);
+  const playerRef = useRef(null);
+  const enemyRef = useRef(null)
 
-  const bunnyUrl = "https://pixijs.io/pixi-react/img/bunny.png";
+  useEffect(() => {
+    const checkCollision = () => {
+      const playerSprite = playerRef.current;
+      const enemySprite = enemyRef.current;
+   
+      if (playerSprite && enemySprite) {
+        // Use PixiJS's hitTestRectangle or other collision detection methods
+        if (playerSprite.getBounds().intersects(enemySprite.getBounds())) {
+          console.log('Collision detected!');
+          // Handle collision logic here
+        }
+      }
+    };
+
+    // Check for collision on each frame
+    const ticker = PIXI.Ticker.shared;
+    ticker.add(checkCollision);
+
+    return () => ticker.remove(checkCollision);
+  }, []);
+
+  
   var songs = [luteTheme, luteTheme2, luteTheme3];
 
   const handlePlayClick = () => {
@@ -158,16 +161,19 @@ function App() {
         </div>
         <div className="gameContainer">
           <Stage
-            width={550}
+            width={700}
             height={500}
             options={{ backgroundColor: 0x5c3523 }}
+
           >
             <Container>
               {/* <ChessBoard width={550} height={500} /> */}
-              <MedievalBeast image={ballFace}></MedievalBeast>
-              <MedievalBeast image={falconGuy}></MedievalBeast>
+              <MedievalBeast image={ballFace} ref={playerRef} ></MedievalBeast>
+              <MedievalBeast image={jesterDawg} ref={enemyRef} scale={0.6}></MedievalBeast>
+              {/*
               <DraggableBunny x={300} scale={0.2} />
               <DraggableBunny x={500} scale={0.3} />
+            */}
             </Container>
           </Stage>
         </div>

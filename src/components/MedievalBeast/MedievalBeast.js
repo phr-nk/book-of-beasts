@@ -30,8 +30,10 @@ const useDrag = ({ x, y }) => {
     anchor: 0.5,
     position,
   };
-};
-const MedievalBeast = ({ image, x = 400, y = 300, ...props }) => {
+}
+
+const MedievalBeast = React.forwardRef((props,ref) => {
+  const { image, x=400, y= 300, ...otherProps } = props;
   const [health, setHealth] = useState(100);
   const healthTextRef = useRef(null);
   const healthBarRef = useRef(null);
@@ -52,8 +54,8 @@ const MedievalBeast = ({ image, x = 400, y = 300, ...props }) => {
   };
 
   return (
-    <Container>
-      <Sprite image={image} {...bind} {...props} />
+    <Container  >
+      <Sprite ref={ref} image={image} {...bind} {...props} />
       <Container>
         <Graphics ref={healthBarRef} x={0} y={50} height={10} />
         <Text
@@ -66,5 +68,5 @@ const MedievalBeast = ({ image, x = 400, y = 300, ...props }) => {
       </Container>
     </Container>
   );
-};
+});
 export default MedievalBeast;

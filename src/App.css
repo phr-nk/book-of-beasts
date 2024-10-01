@@ -39,12 +39,7 @@ body {
   height: 40vmin;
   pointer-events: none;
 }
-.book{
-  height: 80vh;
-  width: 70vw;
-  cursor: none;
- 
-}
+
 
 .overlay-container {
   position: relative;
@@ -97,12 +92,18 @@ body {
   left: 0;
   top: 0;
 }
+.book{
+  height: 80vh;
+  width: 90vw;
+  cursor: none;
+ 
+}
 .overlay {
   position: absolute;
   top: 0;
   left: 0;
   height: 80vh;
-  width: 70vw;
+  width: 90vw;
 }
 .books{
   position: relative;

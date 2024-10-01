@@ -147,7 +147,7 @@ function App() {
             src={player1}
             className="player1"
             alt="logo"
-            onClick={handleLeftPlayerDamage}
+            onClick={handleButtonClick}
           />
           <img
             src={player2}

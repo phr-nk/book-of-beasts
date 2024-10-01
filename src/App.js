@@ -118,7 +118,7 @@ function App() {
         {showModal && (
           <div className="modal">
             <div className="modal-content">
-              <h2>A Book of Games</h2>
+              <h2>A Book of Beasts</h2>
               <p>Inspired by the Alfonso X book </p>
               <button onClick={handlePlayClick}>Play</button>
               <button onClick={handleCancelClick}>Cancel</button>

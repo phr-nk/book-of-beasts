@@ -1,8 +1,8 @@
 import * as PIXI from "pixi.js";
 import * as React from "react";
 import { Sprite, Text, Container, Graphics } from "@pixi/react";
-import { useState, useMemo, useEffect, useRef } from "react";
-
+import { useState, useImperativeHandle, useRef, useEffect } from "react";
+/*
 const useDrag = ({ x, y }) => {
   const sprite = React.useRef();
   const [isDragging, setIsDragging] = React.useState(false);
@@ -31,38 +31,109 @@ const useDrag = ({ x, y }) => {
     position,
   };
 }
+*/
 
-const MedievalBeast = React.forwardRef((props,ref) => {
-  const { image, x=400, y= 300, ...otherProps } = props;
-  const [health, setHealth] = useState(100);
+const MedievalBeast = React.forwardRef((props, ref) => {
+  const {
+    image,
+    stageWidth,
+    stageHeight,
+    onHealthChange,
+    health,
+    flip,
+    x = 500,
+    y = 300,
+  } = props;
+  //const [health, setHealth] = useState(100);
   const healthTextRef = useRef(null);
   const healthBarRef = useRef(null);
-  const bind = useDrag({ x, y });
+  const spriteRef = useRef(); // Add a ref for the Sprite
+  const [spriteX, setSpiteX] = useState(x);
+  const [spriteY, setSpiteY] = useState(y);
+    // Set scale for Y-axis flip
+  //const bind = useDrag({ x, y });
 
-  const handleHealthChange = (newHealth) => {
-    setHealth(newHealth);
-    healthTextRef.current.text = `Health: ${newHealth}`;
+  const velocity = useRef({
+    x: Math.random() * 2 - 1,
+    y: Math.random() * 2 - 1,
+  });
 
-    // Update the health bar width and fill color
-    const healthBar = healthBarRef.current;
-    if (healthBar) {
-      healthBar.clear();
-      healthBar.beginFill(0xff00432);
-      healthBar.drawRect(0, 0, (newHealth / 100) * healthBar.parent.width, 10);
-      healthBar.endFill();
+  
+
+  useEffect(() => {
+
+    if (ref.current) {
+      ref.current.velocity = velocity.current;
     }
-  };
+    const move = () => {
+      const sprite = ref.current;
+      if (healthTextRef.current) {
+        healthTextRef.current.text = `Health: ${health}`;
+      }
+      const healthBar = healthBarRef.current;
+      if (healthBar) {
 
+        healthBar.clear();
+        // Draw white background
+        healthBar.beginFill("white") // White background
+        healthBar.drawRect(0, 0, 100, 10); // Background width
+        healthBar.endFill();
+
+        healthBar.beginFill("red");
+        healthBar.drawRect(0, 0, (health / 100) * 100, 10); // 100 is the full width
+        healthBar.endFill();
+      }
+
+      if (sprite) {
+        // Move the sprite
+        sprite.x += velocity.current.x;
+        sprite.y += velocity.current.y;
+
+        setSpiteX(sprite.x);
+        setSpiteY(sprite.y);
+
+        // Bounce off stage walls
+        if (sprite.x <= 0 || sprite.x + sprite.width >= stageWidth) {
+          velocity.current.x *= -1; // Reverse direction on x-axis
+        }
+        if (sprite.y <= 0 || sprite.y + sprite.height >= stageHeight) {
+          velocity.current.y *= -1; // Reverse direction on y-axis
+        }
+      }
+    };
+
+    const ticker = PIXI.Ticker.shared;
+    ticker.add(move);
+
+    return () => {
+      ticker.remove(move);
+    };
+  }, [ref, stageWidth, stageHeight, health]);
+
+
+
+/*
+  const decreaseHealth = (amount) => {
+    setHealth((prevHealth) => {
+      const newHealth = prevHealth - amount;
+      if (newHealth <= 0) {
+        onHealthChange(false); // Notify that the beast should be removed
+      }
+      return Math.max(newHealth, 0); // Prevent negative health
+    });
+  };
+*/
   return (
-    <Container  >
-      <Sprite ref={ref} image={image} {...bind} {...props} />
+    <Container>
+      <Sprite ref={ref} image={image} {...props}      />
+
       <Container>
-        <Graphics ref={healthBarRef} x={0} y={50} height={10} />
+        <Graphics ref={healthBarRef} x={spriteX} y={spriteY - 50} height={10} />
         <Text
           ref={healthTextRef}
           text={`Health: ${health}`}
-          x={10}
-          y={65}
+          x={spriteX}
+          y={spriteY - 100}
           style={{ fill: 0xffffff }}
         />
       </Container>

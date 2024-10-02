@@ -59,10 +59,12 @@ body {
 .player-title-left{
   margin-top: 1rem;
   justify-content: flex-start;
+  color: black;
 }
 .player-title-right{
   margin-top: 1rem;
   justify-content: flex-end;
+  color: black;
 }
 .player-health-bar-left {
   display: flex;

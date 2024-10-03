@@ -52,13 +52,14 @@ const MedievalBeast = React.forwardRef((props, ref) => {
   const [spriteY, setSpiteY] = useState(y);
     // Set scale for Y-axis flip
   //const bind = useDrag({ x, y });
-
+/*
   const velocity = useRef({
     x: Math.random() * 2 - 1,
     y: Math.random() * 2 - 1,
   });
+*/
+const velocity = useRef({x: 0, y: 0})
 
-  
 
   useEffect(() => {
 
@@ -134,7 +135,7 @@ const MedievalBeast = React.forwardRef((props, ref) => {
           text={`Health: ${health}`}
           x={spriteX}
           y={spriteY - 100}
-          style={{ fill: 0xffffff }}
+          style={{ fill: 0x000000 }}
         />
       </Container>
     </Container>

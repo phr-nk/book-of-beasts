@@ -17,6 +17,7 @@ import MedievalBeast from "./components/MedievalBeast/MedievalBeast";
 import { Stage, Container, Sprite, Text } from "@pixi/react";
 import seaHound from "./beasts/SeaHoundFlipped.png";
 import jesterDawg from "./beasts/JesterDog.png";
+import background from "./backgrounds/field_castle.jpeg";
 import "./App.css";
 
 function App() {
@@ -28,33 +29,54 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [showModal, setShowModal] = useState(true);
+  const [showEnemyKilledModal, setShowEnemyKilledModal] = useState(false);
+  const [showPlayerKilledModal, setShowPlayerKilledModal] = useState(false);
+  const [showWinModal, setShowWinModal] = useState(false);
   const audioRef = useRef(null);
   const playerRef = useRef(null);
   const enemyRef = useRef(null);
-  const stageWidth = 600;
-  const stageHeight = 500;
+  const stageWidth = window.innerWidth / 3;
+  const stageHeight = window.innerWidth / 3.5;
+  const [playerXVelocity, setplayerXVelocity] = useState(0);
+  const [playerYVelocity, setplayerYVelocity] = useState(0);
+  var songs = [luteTheme, luteTheme2, luteTheme3];
+
   const [beasts, setBeasts] = useState([
     {
       id: "enemy",
       image: seaHound,
       ref: enemyRef,
-      scale: 0.2,
+      scale: 0.15,
       flip: true,
       health: 100,
-      x: 400,
+      x: 350,
       y: 250,
     },
     {
       id: "player",
       image: jesterDawg,
       ref: playerRef,
-      scale: 0.3,
+      scale: 0.25,
       flip: false,
       health: 100,
-      x: 40,
+      x: 30,
       y: 250,
     },
   ]);
+  function dealRandomDamage(monsters, damage) {
+    // Get a random index to determine which monster takes damage
+    const randomIndex = Math.floor(Math.random() * monsters.length);
+
+    // Update the selected monster's health
+    const updatedMonsters = monsters.map((monster, index) => {
+      if (index === randomIndex) {
+        return { ...monster, health: monster.health - damage };
+      }
+      return monster;
+    });
+
+    return updatedMonsters;
+  }
 
   useEffect(() => {
     const ticker = PIXI.Ticker.shared;
@@ -65,49 +87,57 @@ function App() {
 
       if (playerSprite && enemySprite) {
         // Check for wall collisions for the player
-          // Move the sprites first
-    playerSprite.x += playerSprite.velocity.x;
-    playerSprite.y += playerSprite.velocity.y;
-    enemySprite.x += enemySprite.velocity.x;
-    enemySprite.y += enemySprite.velocity.y;
+        // Move the sprites first
+        console.log(playerSprite.velocity.x);
+        playerSprite.x += playerSprite.velocity.x;
+        playerSprite.y += playerSprite.velocity.y;
+        enemySprite.x += enemySprite.velocity.x;
+        enemySprite.y += enemySprite.velocity.y;
 
-    // Check for wall collisions for the player
-    if (playerSprite.x <= 0) {
-      playerSprite.x = 0;
-      playerSprite.velocity.x *= -1; // Reverse direction
-    } else if (playerSprite.x + playerSprite.width >= stageWidth) {
-      playerSprite.x = stageWidth - playerSprite.width;
-      playerSprite.velocity.x *= -1; // Reverse direction
-    }
+        // Check for wall collisions for the player
+        if (playerSprite.x <= 0) {
+          playerSprite.x = 0;
+          playerSprite.velocity.x *= -1; // Reverse direction
+        } else if (playerSprite.x + playerSprite.width >= stageWidth) {
+          playerSprite.x = stageWidth - playerSprite.width;
+          playerSprite.velocity.x *= -1; // Reverse direction
+        }
 
-    if (playerSprite.y <= 0) {
-      playerSprite.y = 0;
-      playerSprite.velocity.y *= -1; // Reverse direction
-    } else if (playerSprite.y + playerSprite.height >= stageHeight) {
-      playerSprite.y = stageHeight - playerSprite.height;
-      playerSprite.velocity.y *= -1; // Reverse direction
-    }
+        if (playerSprite.y <= 0) {
+          playerSprite.y = 0;
+          playerSprite.velocity.y *= -1; // Reverse direction
+        } else if (playerSprite.y + playerSprite.height >= stageHeight) {
+          playerSprite.y = stageHeight - playerSprite.height;
+          playerSprite.velocity.y *= -1; // Reverse direction
+        }
 
-    // Check for wall collisions for the enemy
-    if (enemySprite.x <= 0) {
-      enemySprite.x = 0;
-      enemySprite.velocity.x *= -1; // Reverse direction
-    } else if (enemySprite.x + enemySprite.width >= stageWidth) {
-      enemySprite.x = stageWidth - enemySprite.width;
-      enemySprite.velocity.x *= -1; // Reverse direction
-    }
+        // Check for wall collisions for the enemy
+        if (enemySprite.x <= 0) {
+          enemySprite.x = 0;
+          enemySprite.velocity.x *= -1; // Reverse direction
+        } else if (enemySprite.x + enemySprite.width >= stageWidth) {
+          enemySprite.x = stageWidth - enemySprite.width;
+          enemySprite.velocity.x *= -1; // Reverse direction
+        }
 
-    if (enemySprite.y <= 0) {
-      enemySprite.y = 0;
-      enemySprite.velocity.y *= -1; // Reverse direction
-    } else if (enemySprite.y + enemySprite.height >= stageHeight) {
-      enemySprite.y = stageHeight - enemySprite.height;
-      enemySprite.velocity.y *= -1; // Reverse direction
-    }
+        if (enemySprite.y <= 0) {
+          enemySprite.y = 0;
+          enemySprite.velocity.y *= -1; // Reverse direction
+        } else if (enemySprite.y + enemySprite.height >= stageHeight) {
+          enemySprite.y = stageHeight - enemySprite.height;
+          enemySprite.velocity.y *= -1; // Reverse direction
+        }
         // Check for collision between the two beasts
         if (checkCollision(playerSprite, enemySprite)) {
           console.log("Collision detected!");
+          setplayerXVelocity(0);
+          setplayerYVelocity(0);
+          beasts.find((beast) => beast.id === "player").velocity = {
+            x: 0,
+            y: 0,
+          };
 
+          /*
           // Reverse the direction of both sprites
           playerSprite.velocity.x *= -1;
           playerSprite.velocity.y *= -1;
@@ -136,19 +166,32 @@ function App() {
               enemySprite.y -= overlapY / 2;
             }
           }
+          */
 
-          // Decrease health
-          setBeasts((prevBeasts) =>
-            prevBeasts.map((beast) => {
-              if (beast.id === "player") {
-                return { ...beast, health: Math.max(0, beast.health - 10) };
+          // Decrease health with random damage to one beast
+          setBeasts((prevBeasts) => {
+            const randomBeastIndex = Math.floor(
+              Math.random() * prevBeasts.length
+            );
+            const targetBeast = prevBeasts[randomBeastIndex];
+            const damage = Math.floor(Math.random() * 50) + 1; // Generate random damage
+
+            return prevBeasts.map((beast) => {
+              if (beast === targetBeast) {
+                const newHealth = Math.max(0, beast.health - damage);
+                if (newHealth === 0 && beast.id === "enemy") {
+                  setShowEnemyKilledModal(true);
+                  setRightPlayerHealth(rightPlayerHealth-10)
+                }else if(newHealth === 0 && beast.id === "player"){
+                  setShowPlayerKilledModal(true);
+                  setLeftPlayerHealth( leftPlayerHealth-10)
+                }
+                return { ...beast, health: newHealth };
+              } else {
+                return beast;
               }
-              if (beast.id === "enemy") {
-                return { ...beast, health: Math.max(0, beast.health - 10) };
-              }
-              return beast;
-            })
-          );
+            });
+          });
         }
       }
     };
@@ -168,7 +211,7 @@ function App() {
     const bounds2 = beast2.getBounds();
 
     // Define hitbox size reduction
-    const hitboxReduction = 50; // Adjust this value to change hitbox size
+    const hitboxReduction = 10; // Adjust this value to change hitbox size
 
     return (
       bounds1.x + hitboxReduction <
@@ -180,7 +223,6 @@ function App() {
       bounds1.y + bounds1.height - hitboxReduction > bounds2.y + hitboxReduction
     );
   };
-  var songs = [luteTheme, luteTheme2, luteTheme3];
 
   const handlePlayClick = () => {
     setShowModal(false);
@@ -244,6 +286,29 @@ function App() {
       setBeasts((prevBeasts) => prevBeasts.filter((beast) => beast.id !== id));
     }
   };
+  const handleNextBattle = () => {
+    setShowEnemyKilledModal(false);
+    setShowPlayerKilledModal(false);
+    setBeasts((prevBeasts) =>
+      prevBeasts.map((beast) => {
+        if (beast.id === "player") {
+          return { ...beast, health: 100 };
+        }
+        if (beast.id === "enemy") {
+          return { ...beast, health: 100 };
+        }
+        return beast;
+      })
+    );
+  };
+
+  const handleAttack = () => {
+    setplayerXVelocity(2);
+  };
+  const handleJump = () => {
+    setplayerYVelocity(-4);
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -252,8 +317,42 @@ function App() {
             <div className="modal-content">
               <h2>A Book of Beasts</h2>
               <p>Inspired by the Alfonso X book </p>
-              <button onClick={handlePlayClick}>Play</button>
-              <button onClick={handleCancelClick}>Cancel</button>
+              <div className="buttons">
+                <button onClick={handlePlayClick}>Play</button>
+                <button onClick={handleCancelClick}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {showEnemyKilledModal && (
+          <div className="modal">
+            <div className="modal-content">
+              <h2>Beast Slain</h2>
+              <div className="buttons">
+                <button onClick={handleNextBattle}>Next beast</button>
+                <button onClick={handleNextBattle}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {showPlayerKilledModal && (
+          <div className="modal">
+            <div className="modal-content">
+              <h2>Your Beast Has Been Slain</h2>
+              <div className="buttons">
+                <button onClick={handleNextBattle}>Try again</button>
+                <button onClick={handleNextBattle}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {showWinModal && (
+          <div className="modal">
+            <div className="modal-content">
+              <h2>You win, huzzah!</h2>
+
+              <button onClick={handleNextBattle}>Play again</button>
+              <button onClick={handleNextBattle}>Cancel</button>
             </div>
           </div>
         )}
@@ -278,12 +377,17 @@ function App() {
               ></div>
             </div>
           </div>
+          <div className="buttons">
+            <button onClick={handleAttack}>ATTACK</button>
+            <button onClick={handleJump}>JUMP</button>
+          </div>
           <img
             src={player1}
             className="player1"
             alt="logo"
             onClick={handleButtonClick}
           />
+
           <img
             src={player2}
             className="player2"
@@ -297,23 +401,28 @@ function App() {
             height={stageHeight}
             options={{ backgroundColor: 0x5c3523 }}
           >
+            <Sprite
+              image={background}
+              width={stageWidth}
+              height={stageHeight}
+            />
             <Container>
               {beasts.map((beast) => (
                 <MedievalBeast
                   key={beast.id}
                   image={beast.image}
                   ref={beast.ref}
-                  onHealthChange={(isAlive) =>
-                    handleHealthChange(isAlive, beast.id)
-                  }
                   scale={beast.scale}
                   x={beast.x} // Use stored position
                   y={beast.y} // Use stored position
-                  velocity={{ x: beast.id === "player" ? 2 : -2, y: 0 }} // Move towards each other
+                  velocity={{
+                    x: beast.id === "player" ? playerXVelocity : 0,
+                    y: beast.id === "player" ? playerYVelocity : 0,
+                  }}
                   stageWidth={stageWidth}
                   stageHeight={stageHeight}
                   flip={beast.flip}
-                  health={beast.health} // Pass health prop
+                  health={beast.health}
                 />
               ))}
             </Container>
@@ -326,7 +435,7 @@ function App() {
         </div>
       </header>
 
-      <audio controls={true} ref={audioRef} autoPlay onEnded={handleEnded}>
+      <audio ref={audioRef} autoPlay onEnded={handleEnded}>
         <source src={songs[currentSongIndex]} type="audio/mpeg" />
       </audio>
       <button onClick={handleMuteClick}>{isMuted ? "Unmute" : "Mute"}</button>

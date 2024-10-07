@@ -2,42 +2,14 @@ import * as PIXI from "pixi.js";
 import * as React from "react";
 import { Sprite, Text, Container, Graphics } from "@pixi/react";
 import { useState, useImperativeHandle, useRef, useEffect } from "react";
-/*
-const useDrag = ({ x, y }) => {
-  const sprite = React.useRef();
-  const [isDragging, setIsDragging] = React.useState(false);
-  const [position, setPosition] = React.useState({ x, y });
 
-  const onDown = React.useCallback(() => setIsDragging(true), []);
-  const onUp = React.useCallback(() => setIsDragging(false), []);
-  const onMove = React.useCallback(
-    (e) => {
-      if (isDragging && sprite.current) {
-        setPosition(e.data.getLocalPosition(sprite.current.parent));
-      }
-    },
-    [isDragging, setPosition]
-  );
-
-  return {
-    ref: sprite,
-    interactive: true,
-    pointerdown: onDown,
-    pointerup: onUp,
-    pointerupoutside: onUp,
-    pointermove: onMove,
-    alpha: isDragging ? 0.5 : 1,
-    anchor: 0.5,
-    position,
-  };
-}
-*/
 
 const MedievalBeast = React.forwardRef((props, ref) => {
   const {
     image,
     stageWidth,
     stageHeight,
+    isHit,
     onHealthChange,
     health,
     flip,
@@ -113,29 +85,29 @@ const velocity = useRef({x: 0, y: 0})
 
 
 
-/*
-  const decreaseHealth = (amount) => {
-    setHealth((prevHealth) => {
-      const newHealth = prevHealth - amount;
-      if (newHealth <= 0) {
-        onHealthChange(false); // Notify that the beast should be removed
-      }
-      return Math.max(newHealth, 0); // Prevent negative health
-    });
-  };
-*/
   return (
     <Container>
-      <Sprite ref={ref} image={image} {...props}      />
-
+      <Sprite ref={ref} image={image} {...props}   tint={isHit ? (0xFf0000) : (0xffffff)}  />
+      {isHit &&(
+        <Text
+        text={"Beast Hit"}
+        x={spriteX}
+        y={spriteY - 80}
+        style={{ fill: 0xFf0000, fontFamily: "Jacquard 12",  stroke: 0xffffff,   strokeThickness: 5,  dropShadowColor: '#ccced2',}}
+        scale={0.8}
+        />
+      )}
       <Container>
         <Graphics ref={healthBarRef} x={spriteX} y={spriteY - 50} height={10} />
         <Text
           ref={healthTextRef}
           text={`Health: ${health}`}
           x={spriteX}
-          y={spriteY - 100}
-          style={{ fill: 0x000000 }}
+          y={spriteY - 40}
+          style={{ fill: 0x000000, fontFamily: "Jacquard 12",  stroke: 0xffffff,   strokeThickness: 5,  dropShadowColor: '#ccced2',}}
+          scale={0.8}
+          
+
         />
       </Container>
     </Container>

@@ -1,24 +1,33 @@
-import logo from "./logo.svg";
 import book from "./blank_book_2.png";
 import bookOpen from "./blank_book_open_forward.gif";
 import player1 from "./player1.png";
 import player2 from "./player2.png";
-import beer from "./beer.png";
 import ribbon from "./Red_Ribbon.png";
 import luteTheme from "./lute_theme_2.mp3";
-import luteTheme2 from "./lute_theme.mp3";
-import luteTheme3 from "./lute_theme_3.mp3";
-import ChessBoard from "./Chessboard/Chessboard";
 import { useState, useMemo, useEffect, useRef } from "react";
 import * as React from "react";
-import { BlurFilter, TextStyle } from "pixi.js";
 import * as PIXI from "pixi.js"; // Import PixiJS
 import MedievalBeast from "./components/MedievalBeast/MedievalBeast";
 import { Stage, Container, Sprite, Text } from "@pixi/react";
 import seaHound from "./beasts/SeaHoundFlipped.png";
+import crazyMFRabbit from "./beasts/rabbitWithBranch.png";
+import birdBalls from "./beasts/birdBallFace.png";
 import jesterDawg from "./beasts/JesterDog.png";
-import background from "./backgrounds/field_castle.jpeg";
+import TreeMammal from "./beasts/TreeMammal.png";
+import guySnake from "./beasts/guyBirdSnakeHead.png";
+import bigEars from "./beasts/BigEars.png";
+import castle from "./backgrounds/field_castle.jpeg";
+import tower from "./backgrounds/field_tower.jpeg";
+import cave from "./backgrounds/cave.jpeg";
+import mountain from "./backgrounds/mountain.jpeg";
+import tavern from "./backgrounds/tavern.jpeg";
 import "./App.css";
+
+var backgrounds = [castle, tower, cave, mountain, tavern];
+
+var beastImages = [seaHound, crazyMFRabbit, birdBalls, bigEars];
+
+var playerBeasts = [jesterDawg, TreeMammal, guySnake];
 
 function App() {
   const [showBookOpen, setShowBookOpen] = useState(false);
@@ -31,52 +40,52 @@ function App() {
   const [showModal, setShowModal] = useState(true);
   const [showEnemyKilledModal, setShowEnemyKilledModal] = useState(false);
   const [showPlayerKilledModal, setShowPlayerKilledModal] = useState(false);
+  const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [showWinModal, setShowWinModal] = useState(false);
+  const [showGameContainer, setshowGameContainer] = useState(false);
+  const [showPlayerArea, setShowPlayerArea] = useState(false);
+  const [selectedBeast, setSelected] = useState(jesterDawg);
+  const [background, setBackground] = useState(castle);
   const audioRef = useRef(null);
   const playerRef = useRef(null);
   const enemyRef = useRef(null);
-  const stageWidth = window.innerWidth / 3;
-  const stageHeight = window.innerWidth / 3.5;
+  const stageWidth = window.innerWidth > 768 ? (window.innerWidth / 3) : (window.innerWidth / 1.2);
+  const stageHeight = window.innerWidth > 768 ? window.innerHeight / 2 : window.innerHeight / 4 ;
   const [playerXVelocity, setplayerXVelocity] = useState(0);
   const [playerYVelocity, setplayerYVelocity] = useState(0);
-  var songs = [luteTheme, luteTheme2, luteTheme3];
-
-  const [beasts, setBeasts] = useState([
+  const [enemyXVelocity, setEnemyXVelocity] = useState(0);
+  const [enemyYVelocity, setEnemyYVelocity] = useState(0);
+  const [playerX, setPlayerX] = useState(25);
+  const [playerY, setPlayerY] = useState(250);
+  const [enemyX, setEnemyX] = useState(300);
+  const [enemyY, setEnemyY] = useState(250);
+  var songs = [luteTheme];
+  var starterBeasts = [
     {
       id: "enemy",
       image: seaHound,
       ref: enemyRef,
-      scale: 0.15,
+      scale:window.innerWidth > 768 ?  0.15 : 0.1,
       flip: true,
       health: 100,
-      x: 350,
-      y: 250,
+      x: enemyX,
+      y: enemyY,
+      isHit: false,
     },
     {
       id: "player",
-      image: jesterDawg,
+      image: selectedBeast,
       ref: playerRef,
-      scale: 0.25,
+      scale: window.innerWidth > 768 ? 0.25 : 0.1,
       flip: false,
       health: 100,
-      x: 30,
-      y: 250,
+      x: playerX,
+      y: playerY,
+      isHit: false,
     },
-  ]);
-  function dealRandomDamage(monsters, damage) {
-    // Get a random index to determine which monster takes damage
-    const randomIndex = Math.floor(Math.random() * monsters.length);
+  ];
 
-    // Update the selected monster's health
-    const updatedMonsters = monsters.map((monster, index) => {
-      if (index === randomIndex) {
-        return { ...monster, health: monster.health - damage };
-      }
-      return monster;
-    });
-
-    return updatedMonsters;
-  }
+  const [beasts, setBeasts] = useState(starterBeasts);
 
   useEffect(() => {
     const ticker = PIXI.Ticker.shared;
@@ -88,11 +97,16 @@ function App() {
       if (playerSprite && enemySprite) {
         // Check for wall collisions for the player
         // Move the sprites first
-        console.log(playerSprite.velocity.x);
+
         playerSprite.x += playerSprite.velocity.x;
         playerSprite.y += playerSprite.velocity.y;
         enemySprite.x += enemySprite.velocity.x;
         enemySprite.y += enemySprite.velocity.y;
+
+        //setPlayerX(playerSprite.x)
+        //setPlayerY(playerSprite.y)
+        //setEnemyX(enemySprite.x)
+        //setEnemyY(enemySprite.y)
 
         // Check for wall collisions for the player
         if (playerSprite.x <= 0) {
@@ -129,7 +143,6 @@ function App() {
         }
         // Check for collision between the two beasts
         if (checkCollision(playerSprite, enemySprite)) {
-          console.log("Collision detected!");
           setplayerXVelocity(0);
           setplayerYVelocity(0);
           beasts.find((beast) => beast.id === "player").velocity = {
@@ -137,61 +150,82 @@ function App() {
             y: 0,
           };
 
-          /*
-          // Reverse the direction of both sprites
-          playerSprite.velocity.x *= -1;
-          playerSprite.velocity.y *= -1;
-          enemySprite.velocity.x *= -1;
-          enemySprite.velocity.y *= -1;
-
-          // Adjust positions to prevent sticking
-          const overlapX = Math.abs(playerSprite.x - enemySprite.x);
-          const overlapY = Math.abs(playerSprite.y - enemySprite.y);
-          if (overlapX < overlapY) {
-            // Resolve horizontal overlap
-            if (playerSprite.x < enemySprite.x) {
-              playerSprite.x -= overlapX / 2;
-              enemySprite.x += overlapX / 2;
-            } else {
-              playerSprite.x += overlapX / 2;
-              enemySprite.x -= overlapX / 2;
-            }
-          } else {
-            // Resolve vertical overlap
-            if (playerSprite.y < enemySprite.y) {
-              playerSprite.y -= overlapY / 2;
-              enemySprite.y += overlapY / 2;
-            } else {
-              playerSprite.y += overlapY / 2;
-              enemySprite.y -= overlapY / 2;
-            }
-          }
-          */
-
           // Decrease health with random damage to one beast
           setBeasts((prevBeasts) => {
             const randomBeastIndex = Math.floor(
               Math.random() * prevBeasts.length
             );
             const targetBeast = prevBeasts[randomBeastIndex];
-            const damage = Math.floor(Math.random() * 50) + 1; // Generate random damage
+            const damage = Math.floor(Math.random() * 70) + 1; // Generate random damage
 
             return prevBeasts.map((beast) => {
               if (beast === targetBeast) {
                 const newHealth = Math.max(0, beast.health - damage);
                 if (newHealth === 0 && beast.id === "enemy") {
                   setShowEnemyKilledModal(true);
-                  setRightPlayerHealth(rightPlayerHealth-10)
-                }else if(newHealth === 0 && beast.id === "player"){
+                  const randomBackgroundIndex = Math.floor(
+                    Math.random() * backgrounds.length
+                  );
+                  setBackground(backgrounds[randomBackgroundIndex]);
+                  setRightPlayerHealth((prevHealth) => {
+                    const updatedHealth = Math.max(0, prevHealth - 30);
+                    if (updatedHealth <= 0) {
+                      setShowWinModal(true);
+                      setShowPlayerArea(false);
+                    }
+                    return updatedHealth;
+                  });
+                  const randomImage =
+                    beastImages[Math.floor(Math.random() * beastImages.length)];
+                  const randomScale = Math.random() * 0.4 + 0.1; // Random scale between 0.1 and 0.3
+                  return {
+                    ...beast,
+                    health: 100,
+                    image: randomImage,
+                    scale: randomScale,
+
+                    // Maintain current x and y positions
+                    x: beast.x,
+                    y: beast.y,
+                  };
+                } else if (newHealth === 0 && beast.id === "player") {
                   setShowPlayerKilledModal(true);
-                  setLeftPlayerHealth( leftPlayerHealth-10)
+                  const randomBackgroundIndex = Math.floor(
+                    Math.random() * backgrounds.length
+                  );
+                  setBackground(backgrounds[randomBackgroundIndex]);
+                  setLeftPlayerHealth((prevHealth) => {
+                    const updatedHealth = Math.max(0, prevHealth - 30);
+                    if (updatedHealth <= 0) {
+                      setShowGameOverModal(true);
+                      setShowPlayerArea(false);
+                    }
+                    return updatedHealth;
+                  });
                 }
-                return { ...beast, health: newHealth };
+                return {
+                  ...beast,
+                  health: newHealth,
+                  x: beast.x,
+                  y: beast.y,
+                  isHit: true,
+                }; // Maintain position
               } else {
-                return beast;
+                return beast; // Keep other beasts unchanged
               }
             });
           });
+          // Reset the hit state after a brief moment
+          setTimeout(() => {
+            setBeasts((prevBeasts) => {
+              return prevBeasts.map((beast) => {
+                if (beast.id === "player" || beast.id === "enemy") {
+                  return { ...beast, isHit: false };
+                }
+                return beast;
+              });
+            });
+          }, 1500); // Adjust the duration as needed (300ms for example)
         }
       }
     };
@@ -204,7 +238,17 @@ function App() {
     return () => {
       ticker.remove(update);
     };
-  }, [showModal]);
+  }, [showModal, leftPlayerHealth, rightPlayerHealth]);
+
+  // Set up random movement intervals for the right beast
+  useEffect(() => {
+    const moveInterval = setInterval(() => {
+      const randomTime = Math.random() * 5000 + 2000; // Random time between 2 and 7 seconds
+      setTimeout(handleRightBeastMove, randomTime);
+    }, 4000); // Check for movement every 7 seconds
+
+    return () => clearInterval(moveInterval);
+  }, []);
 
   const checkCollision = (beast1, beast2) => {
     const bounds1 = beast1.getBounds();
@@ -227,12 +271,16 @@ function App() {
   const handlePlayClick = () => {
     setShowModal(false);
     setIsPlaying(true);
+    setshowGameContainer(true);
+    setShowPlayerArea(true);
+
     audioRef.current.play();
-    // Start the game here
   };
 
   const handleCancelClick = () => {
     setShowModal(false);
+    setshowGameContainer(true);
+    setShowPlayerArea(true);
   };
   const handleMuteClick = () => {
     setIsMuted(!isMuted);
@@ -245,50 +293,12 @@ function App() {
     audioRef.current.play();
   };
 
-  const handleButtonClick = () => {
-    setShowBookOpen(true);
-    clearTimeout(timeoutId);
-    setTimeoutId(
-      setTimeout(() => {
-        setShowBookOpen(false);
-        const bookOpenImage = document.querySelector(".overlay");
-        if (bookOpenImage) {
-          bookOpenImage.src = bookOpen;
-        }
-      }, 750)
-    );
-  };
-
-  const handleLeftPlayerDamage = () => {
-    setLeftPlayerHealth((prevHealth) => {
-      const newHealth = prevHealth - 10;
-      if (newHealth <= 0) {
-        // Handle player death logic here
-        return 0; // Prevent negative health
-      }
-      return newHealth;
-    });
-  };
-
-  const handleRightPlayerDamage = () => {
-    setRightPlayerHealth((prevHealth) => {
-      const newHealth = prevHealth - 10;
-      if (newHealth <= 0) {
-        // Handle enemy death logic here
-        return 0; // Prevent negative health
-      }
-      return newHealth;
-    });
-  };
-
-  const handleHealthChange = (isAlive, id) => {
-    if (!isAlive) {
-      setBeasts((prevBeasts) => prevBeasts.filter((beast) => beast.id !== id));
-    }
-  };
   const handleNextBattle = () => {
     setShowEnemyKilledModal(false);
     setShowPlayerKilledModal(false);
+    setShowWinModal(false);
+    setShowGameOverModal(false);
+    setShowPlayerArea(true);
     setBeasts((prevBeasts) =>
       prevBeasts.map((beast) => {
         if (beast.id === "player") {
@@ -303,10 +313,73 @@ function App() {
   };
 
   const handleAttack = () => {
-    setplayerXVelocity(2);
+    setplayerXVelocity(4);
   };
   const handleJump = () => {
     setplayerYVelocity(-4);
+  };
+  const handleBeastSelect = (image) => {
+    setSelected(image); // Toggle the state
+    setBeasts((prevBeasts) =>
+      prevBeasts.map((beast) => {
+        if (beast.id === "player") {
+          if (image !== jesterDawg) {
+            return { ...beast, image: image, scale: window.innerWidth > 768 ? 0.6 : 0.35 };
+          } else {
+            return { ...beast, image: image };
+          }
+        }
+
+        return beast;
+      })
+    );
+  };
+  const handleNewGame = () => {
+    setLeftPlayerHealth(100);
+    setRightPlayerHealth(100);
+    setShowEnemyKilledModal(false);
+    setShowPlayerKilledModal(false);
+    setShowWinModal(false);
+    setShowGameOverModal(false);
+    setshowGameContainer(false);
+    setShowBookOpen(true);
+    setBeasts(starterBeasts);
+    clearTimeout(timeoutId);
+    setTimeoutId(
+      setTimeout(() => {
+        setShowBookOpen(false);
+        const bookOpenImage = document.querySelector(".overlay");
+        if (bookOpenImage) {
+          bookOpenImage.src = bookOpen;
+        }
+        setshowGameContainer(true);
+        setShowPlayerArea(true);
+      }, 750)
+    );
+
+    setBeasts((prevBeasts) =>
+      prevBeasts.map((beast) => {
+        if (beast.id === "player") {
+          if (beast.image !== jesterDawg) {
+            return { ...beast, health: 100, scale: 0.6 };
+          } else {
+            return { ...beast, health: 100 };
+          }
+        }
+        if (beast.id === "enemy") {
+          return { ...beast, health: 100 };
+        }
+        return beast;
+      })
+    );
+  };
+
+  // Function to handle the right beast's movement
+  const handleRightBeastMove = () => {
+    const randomXVelocity = (Math.random() - 0.5) * 4; // Random velocity between -2 and 2
+    const randomYVelocity = (Math.random() - 0.5) * 4; // Random velocity between -2 and 2
+    setEnemyXVelocity(randomXVelocity);
+    setEnemyYVelocity(randomYVelocity);
   };
 
   return (
@@ -316,10 +389,40 @@ function App() {
           <div className="modal">
             <div className="modal-content">
               <h2>A Book of Beasts</h2>
-              <p>Inspired by the Alfonso X book </p>
+              <p>
+                Inspired by the Book of Games, made for the King Alfonso X of
+                Castile{" "}
+              </p>
+
+              <h3>Choose your beast</h3>
+              <div className="playerBeasts">
+                {playerBeasts.map((beast) => (
+                  <div>
+                    {beast === selectedBeast ? (
+                      <img
+                        className="playerBeast selectedStarterBeast"
+                        src={beast}
+                        alt="player beast"
+                        onClick={() => handleBeastSelect(beast)}
+                      />
+                    ) : (
+                      <img
+                        className="playerBeast"
+                        src={beast}
+                        alt="player beast"
+                        onClick={() => handleBeastSelect(beast)}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
               <div className="buttons">
-                <button onClick={handlePlayClick}>Play</button>
-                <button onClick={handleCancelClick}>Cancel</button>
+                <button className="modalButton" onClick={handlePlayClick}>
+                  Play
+                </button>
+                <button className="modalButton" onClick={handleCancelClick}>
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
@@ -329,8 +432,12 @@ function App() {
             <div className="modal-content">
               <h2>Beast Slain</h2>
               <div className="buttons">
-                <button onClick={handleNextBattle}>Next beast</button>
-                <button onClick={handleNextBattle}>Cancel</button>
+                <button className="modalButton" onClick={handleNextBattle}>
+                  Next beast
+                </button>
+                <button className="modalButton" onClick={handleNextBattle}>
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
@@ -340,8 +447,12 @@ function App() {
             <div className="modal-content">
               <h2>Your Beast Has Been Slain</h2>
               <div className="buttons">
-                <button onClick={handleNextBattle}>Try again</button>
-                <button onClick={handleNextBattle}>Cancel</button>
+                <button className="modalButton" onClick={handleNextBattle}>
+                  Try again
+                </button>
+                <button className="modalButton" onClick={handleNextBattle}>
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
@@ -350,88 +461,126 @@ function App() {
           <div className="modal">
             <div className="modal-content">
               <h2>You win, huzzah!</h2>
-
-              <button onClick={handleNextBattle}>Play again</button>
-              <button onClick={handleNextBattle}>Cancel</button>
+              <div className="buttons">
+                <button className="modalButton" onClick={handleNewGame}>
+                  Play again
+                </button>
+                <button className="modalButton" onClick={handleNewGame}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {showGameOverModal && (
+          <div className="modal">
+            <div className="modal-content">
+              <h2>Your battle ends here....</h2>
+              <div className="buttons">
+                <button className="modalButton" onClick={handleNewGame}>
+                  Play again
+                </button>
+                <button className="modalButton" onClick={handleNewGame}>
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         )}
         <div className="overlay-container">
+          <div className="actionButtons">
+            <button className="attackButton" onClick={handleAttack}>
+              Attack
+            </button>
+            <button className="jumpButton" onClick={handleJump}>
+              Jump
+            </button>
+          </div>
           <div className="books">
             <img src={book} className="book" alt="logo" />
             {showBookOpen && (
               <img src={bookOpen} className="overlay" alt="logo" />
             )}
-            <div className="player-health-bar-left">
-              <span className="player-title-left">Player 1</span>
-              <div
-                className="health-bar-fill"
-                style={{ width: `${leftPlayerHealth}%` }}
-              ></div>
-            </div>
-            <div className="player-health-bar-right">
-              <span className="player-title-right">Player 2</span>
-              <div
-                className="health-bar-fill"
-                style={{ width: `${rightPlayerHealth}%` }}
-              ></div>
-            </div>
           </div>
-          <div className="buttons">
-            <button onClick={handleAttack}>ATTACK</button>
-            <button onClick={handleJump}>JUMP</button>
-          </div>
-          <img
-            src={player1}
-            className="player1"
-            alt="logo"
-            onClick={handleButtonClick}
-          />
+          {showPlayerArea && (
+            <div className="playerArea">
+              <div className="player-health-bar-left">
+                <span className="player-title-left">You</span>
+                <div
+                  className="health-bar-fill"
+                  style={{ width: `${leftPlayerHealth}%` }}
+                ></div>
+              </div>
+              <div className="player-health-bar-right">
+                <span className="player-title-right">Enemy</span>
+                <div
+                  className="health-bar-fill"
+                  style={{ width: `${rightPlayerHealth}%` }}
+                ></div>
+              </div>
 
-          <img
-            src={player2}
-            className="player2"
-            alt="logo"
-            onClick={handleRightPlayerDamage}
-          />
+              <img src={player1} className="player1" alt="logo" />
+
+              <img src={player2} className="player2" alt="logo" />
+            </div>
+          )}
         </div>
         <div className="gameContainer">
-          <Stage
-            width={stageWidth}
-            height={stageHeight}
-            options={{ backgroundColor: 0x5c3523 }}
-          >
-            <Sprite
-              image={background}
+          {showGameContainer && (
+            <Stage
               width={stageWidth}
               height={stageHeight}
-            />
-            <Container>
-              {beasts.map((beast) => (
-                <MedievalBeast
-                  key={beast.id}
-                  image={beast.image}
-                  ref={beast.ref}
-                  scale={beast.scale}
-                  x={beast.x} // Use stored position
-                  y={beast.y} // Use stored position
-                  velocity={{
-                    x: beast.id === "player" ? playerXVelocity : 0,
-                    y: beast.id === "player" ? playerYVelocity : 0,
-                  }}
-                  stageWidth={stageWidth}
-                  stageHeight={stageHeight}
-                  flip={beast.flip}
-                  health={beast.health}
-                />
-              ))}
-            </Container>
-          </Stage>
+              options={{ backgroundColor: 0x5c3523 }}
+            >
+              <Sprite
+                image={background}
+                width={stageWidth}
+                height={stageHeight}
+              />
+              <Container>
+                {beasts.map((beast) => (
+                  <MedievalBeast
+                    key={beast.id}
+                    image={beast.image}
+                    ref={beast.ref}
+                    scale={beast.scale}
+                    x={beast.x} // Use stored position
+                    y={beast.y} // Use stored position
+                    velocity={{
+                      x:
+                        beast.id === "player"
+                          ? playerXVelocity
+                          : enemyXVelocity,
+                      y:
+                        beast.id === "player"
+                          ? playerYVelocity
+                          : enemyYVelocity,
+                    }}
+                    stageWidth={stageWidth}
+                    stageHeight={stageHeight}
+                    flip={beast.flip}
+                    health={beast.health}
+                    isHit = {beast.isHit}
+                  />
+                ))}
+              </Container>
+            </Stage>
+          )}
         </div>
 
         <div className="titleContainer">
-          <img src={ribbon} className="ribbon" />
-          <p className="title">A game by Frank Lenoci</p>
+          <img src={ribbon} className="ribbon" alt="ribbon" />
+          <p className="title">
+            A game by{" "}
+            <a
+              className="nameLink"
+              href="https://www.frank-lenoci.me"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Frank Lenoci
+            </a>
+          </p>
         </div>
       </header>
 

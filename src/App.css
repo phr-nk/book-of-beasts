@@ -76,7 +76,7 @@ button{
 .jumpButton{
   position: absolute;
   left: 20%;
-  top:22%;
+  top:25%;
   transform: translate(-50%, -50%);
   z-index: 800;
   cursor: url('cursor_outline_yellow.png'), auto;
@@ -222,15 +222,47 @@ button:hover {
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+/* Styles for screens smaller than 768px */
+@media (max-width: 768px) {
+  .player-health-bar-right{
+    width: 80px;
   }
-  to {
-    transform: rotate(360deg);
+  .player-health-bar-left{
+    width: 80px;
+  }
+  .player1 {
+    height: 25vh;
+    top: 50%;
+    left: 30%;
+  }
+  .player2 {
+    height:35vh;
+    top:55%;
+    left: 70%
+    
+  }
+  .book{
+    height: 50vh;
+  }
+  .overlay{
+    height:50vh;
+  }
+  .jumpButton{
+    top:35%;
+    left: 70%;
+  }
+  .attackButton{
+    top:35%;
+    left: 30%;
+  }
+  .ribbon {
+    top: 85%;
+  }
+  .title{
+    text-wrap:nowrap;
+    bottom: 10%;
+  }
+  .playerBeast{
+    height: 8vh;
   }
 }

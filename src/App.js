@@ -4,8 +4,6 @@ import player1 from "./player1.png";
 import player2 from "./player2.png";
 import ribbon from "./Red_Ribbon.png";
 import luteTheme from "./lute_theme_2.mp3";
-import luteTheme2 from "./lute_theme.mp3";
-import luteTheme3 from "./lute_theme_3.mp3";
 import { useState, useMemo, useEffect, useRef } from "react";
 import * as React from "react";
 import * as PIXI from "pixi.js"; // Import PixiJS
@@ -51,8 +49,8 @@ function App() {
   const audioRef = useRef(null);
   const playerRef = useRef(null);
   const enemyRef = useRef(null);
-  const stageWidth = window.innerWidth / 3;
-  const stageHeight = window.innerWidth / 3.5;
+  const stageWidth = window.innerWidth > 768 ? (window.innerWidth / 3) : (window.innerWidth / 1.2);
+  const stageHeight = window.innerWidth > 768 ? window.innerHeight / 2 : window.innerHeight / 4 ;
   const [playerXVelocity, setplayerXVelocity] = useState(0);
   const [playerYVelocity, setplayerYVelocity] = useState(0);
   const [enemyXVelocity, setEnemyXVelocity] = useState(0);
@@ -61,13 +59,13 @@ function App() {
   const [playerY, setPlayerY] = useState(250);
   const [enemyX, setEnemyX] = useState(300);
   const [enemyY, setEnemyY] = useState(250);
-  var songs = [luteTheme, luteTheme2, luteTheme3];
+  var songs = [luteTheme];
   var starterBeasts = [
     {
       id: "enemy",
       image: seaHound,
       ref: enemyRef,
-      scale: 0.15,
+      scale:window.innerWidth > 768 ?  0.15 : 0.1,
       flip: true,
       health: 100,
       x: enemyX,
@@ -78,7 +76,7 @@ function App() {
       id: "player",
       image: selectedBeast,
       ref: playerRef,
-      scale: 0.25,
+      scale: window.innerWidth > 768 ? 0.25 : 0.1,
       flip: false,
       health: 100,
       x: playerX,
@@ -326,7 +324,7 @@ function App() {
       prevBeasts.map((beast) => {
         if (beast.id === "player") {
           if (image !== jesterDawg) {
-            return { ...beast, image: image, scale: 0.6 };
+            return { ...beast, image: image, scale: window.innerWidth > 768 ? 0.6 : 0.35 };
           } else {
             return { ...beast, image: image };
           }

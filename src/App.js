@@ -49,28 +49,33 @@ function App() {
   const audioRef = useRef(null);
   const playerRef = useRef(null);
   const enemyRef = useRef(null);
-  const stageWidth = window.innerWidth > 768 ? (window.innerWidth / 3) : (window.innerWidth / 1.2);
-  const stageHeight = window.innerWidth > 768 ? window.innerHeight / 2 : window.innerHeight / 4 ;
+  const stageWidth =
+    window.innerWidth > 768 ? window.innerWidth / 3 : window.innerWidth / 1.2;
+  const stageHeight =
+    window.innerWidth > 768 ? window.innerHeight / 2 : window.innerHeight / 4;
   const [playerXVelocity, setplayerXVelocity] = useState(0);
   const [playerYVelocity, setplayerYVelocity] = useState(0);
   const [enemyXVelocity, setEnemyXVelocity] = useState(0);
   const [enemyYVelocity, setEnemyYVelocity] = useState(0);
-  const [playerX, setPlayerX] = useState(25);
-  const [playerY, setPlayerY] = useState(250);
-  const [enemyX, setEnemyX] = useState(300);
-  const [enemyY, setEnemyY] = useState(250);
+  const [playerX, setPlayerX] = useState(stageWidth - stageWidth + 20);
+  const [playerY, setPlayerY] = useState(stageHeight + 10);
+  const [enemyX, setEnemyX] = useState(stageWidth - 20);
+  const [enemyY, setEnemyY] = useState(stageHeight + 10);
+  const [paused, setPaused] = useState(false);
   var songs = [luteTheme];
   var starterBeasts = [
     {
       id: "enemy",
       image: seaHound,
       ref: enemyRef,
-      scale:window.innerWidth > 768 ?  0.15 : 0.1,
+      scale: window.innerWidth > 768 ? 0.15 : 0.1,
       flip: true,
       health: 100,
       x: enemyX,
       y: enemyY,
       isHit: false,
+      attacking: false,
+      jumping: false,
     },
     {
       id: "player",
@@ -82,154 +87,158 @@ function App() {
       x: playerX,
       y: playerY,
       isHit: false,
+      attacking: false,
+      jumping: false,
     },
   ];
 
   const [beasts, setBeasts] = useState(starterBeasts);
 
+  const update = () => {
+    if (paused) return;
+    const playerSprite = playerRef.current;
+    const enemySprite = enemyRef.current;
+
+    if (playerSprite && enemySprite) {
+      // Check for wall collisions for the player
+      // Move the sprites first
+
+      playerSprite.x += playerSprite.velocity.x;
+      playerSprite.y += playerSprite.velocity.y;
+      enemySprite.x += enemySprite.velocity.x;
+      enemySprite.y += enemySprite.velocity.y;
+
+      // Check for wall collisions for the player
+      if (playerSprite.x <= 0) {
+        playerSprite.x = 0;
+        playerSprite.velocity.x *= -1; // Reverse direction
+      } else if (playerSprite.x + playerSprite.width >= stageWidth) {
+        playerSprite.x = stageWidth - playerSprite.width;
+        playerSprite.velocity.x *= -1; // Reverse direction
+      }
+
+      if (playerSprite.y <= 0) {
+        playerSprite.y = 0;
+        playerSprite.velocity.y *= -1; // Reverse direction
+      } else if (playerSprite.y + playerSprite.height >= stageHeight) {
+        playerSprite.y = stageHeight - playerSprite.height;
+        playerSprite.velocity.y *= -1; // Reverse direction
+      }
+
+      // Check for wall collisions for the enemy
+      if (enemySprite.x <= 0) {
+        enemySprite.x = 0;
+        enemySprite.velocity.x *= -1; // Reverse direction
+      } else if (enemySprite.x + enemySprite.width >= stageWidth) {
+        enemySprite.x = stageWidth - enemySprite.width;
+        enemySprite.velocity.x *= -1; // Reverse direction
+      }
+
+      if (enemySprite.y <= 0) {
+        enemySprite.y = 0;
+        enemySprite.velocity.y *= -1; // Reverse direction
+      } else if (enemySprite.y + enemySprite.height >= stageHeight) {
+        enemySprite.y = stageHeight - enemySprite.height;
+        enemySprite.velocity.y *= -1; // Reverse direction
+      }
+      // Check for collision between the two beasts
+      if (checkCollision(playerSprite, enemySprite)) {
+        setplayerXVelocity(0);
+        setplayerYVelocity(0);
+        beasts.find((beast) => beast.id === "player").velocity = {
+          x: 0,
+          y: 0,
+        };
+
+        // Decrease health with random damage to one beast
+        setBeasts((prevBeasts) => {
+          const randomBeastIndex = Math.floor(
+            Math.random() * prevBeasts.length
+          );
+          const targetBeast = prevBeasts[randomBeastIndex];
+          const damage = Math.floor(Math.random() * 70) + 1; // Generate random damage
+
+          return prevBeasts.map((beast) => {
+            if (beast === targetBeast) {
+              const newHealth = Math.max(0, beast.health - damage);
+
+              if (newHealth === 0 && beast.id === "enemy") {
+                setPaused(true);
+                setShowEnemyKilledModal(true);
+                const randomBackgroundIndex = Math.floor(
+                  Math.random() * backgrounds.length
+                );
+
+                setBackground(backgrounds[randomBackgroundIndex]);
+                setRightPlayerHealth((prevHealth) => {
+                  const updatedHealth = Math.max(0, prevHealth - 30);
+                  if (updatedHealth <= 0) {
+                    setShowWinModal(true);
+                    setShowPlayerArea(false);
+                  }
+                  return updatedHealth;
+                });
+
+                const randomImage =
+                  beastImages[Math.floor(Math.random() * beastImages.length)];
+                const randomScale = Math.random() * 0.4 + 0.1; // Random scale between 0.1 and 0.3
+                return {
+                  ...beast,
+                  health: 100,
+                  image: randomImage,
+                  scale: randomScale,
+
+                  // Maintain current x and y positions
+                  x: beast.x,
+                  y: beast.y,
+                };
+              } else if (newHealth === 0 && beast.id === "player") {
+                setPaused(true);
+                setShowPlayerKilledModal(true);
+                const randomBackgroundIndex = Math.floor(
+                  Math.random() * backgrounds.length
+                );
+                setBackground(backgrounds[randomBackgroundIndex]);
+                setLeftPlayerHealth((prevHealth) => {
+                  const updatedHealth = Math.max(0, prevHealth - 30);
+                  if (updatedHealth <= 0) {
+                    setShowGameOverModal(true);
+                    setShowPlayerArea(false);
+                  }
+                  return updatedHealth;
+                });
+              }
+              return {
+                ...beast,
+                health: newHealth,
+                x: beast.x,
+                y: beast.y,
+                isHit: true,
+              }; // Maintain position
+            } else {
+              return beast; // Keep other beasts unchanged
+            }
+          });
+        });
+        // Reset the hit state after a brief moment
+        setTimeout(() => {
+          setBeasts((prevBeasts) => {
+            return prevBeasts.map((beast) => {
+              if (beast.id === "player" || beast.id === "enemy") {
+                return { ...beast, isHit: false };
+              }
+              return beast;
+            });
+          });
+        }, 1500); // Adjust the duration as needed (300ms for example)
+      }
+    }
+  };
+
   useEffect(() => {
     const ticker = PIXI.Ticker.shared;
 
-    const update = () => {
-      const playerSprite = playerRef.current;
-      const enemySprite = enemyRef.current;
-
-      if (playerSprite && enemySprite) {
-        // Check for wall collisions for the player
-        // Move the sprites first
-
-        playerSprite.x += playerSprite.velocity.x;
-        playerSprite.y += playerSprite.velocity.y;
-        enemySprite.x += enemySprite.velocity.x;
-        enemySprite.y += enemySprite.velocity.y;
-
-        //setPlayerX(playerSprite.x)
-        //setPlayerY(playerSprite.y)
-        //setEnemyX(enemySprite.x)
-        //setEnemyY(enemySprite.y)
-
-        // Check for wall collisions for the player
-        if (playerSprite.x <= 0) {
-          playerSprite.x = 0;
-          playerSprite.velocity.x *= -1; // Reverse direction
-        } else if (playerSprite.x + playerSprite.width >= stageWidth) {
-          playerSprite.x = stageWidth - playerSprite.width;
-          playerSprite.velocity.x *= -1; // Reverse direction
-        }
-
-        if (playerSprite.y <= 0) {
-          playerSprite.y = 0;
-          playerSprite.velocity.y *= -1; // Reverse direction
-        } else if (playerSprite.y + playerSprite.height >= stageHeight) {
-          playerSprite.y = stageHeight - playerSprite.height;
-          playerSprite.velocity.y *= -1; // Reverse direction
-        }
-
-        // Check for wall collisions for the enemy
-        if (enemySprite.x <= 0) {
-          enemySprite.x = 0;
-          enemySprite.velocity.x *= -1; // Reverse direction
-        } else if (enemySprite.x + enemySprite.width >= stageWidth) {
-          enemySprite.x = stageWidth - enemySprite.width;
-          enemySprite.velocity.x *= -1; // Reverse direction
-        }
-
-        if (enemySprite.y <= 0) {
-          enemySprite.y = 0;
-          enemySprite.velocity.y *= -1; // Reverse direction
-        } else if (enemySprite.y + enemySprite.height >= stageHeight) {
-          enemySprite.y = stageHeight - enemySprite.height;
-          enemySprite.velocity.y *= -1; // Reverse direction
-        }
-        // Check for collision between the two beasts
-        if (checkCollision(playerSprite, enemySprite)) {
-          setplayerXVelocity(0);
-          setplayerYVelocity(0);
-          beasts.find((beast) => beast.id === "player").velocity = {
-            x: 0,
-            y: 0,
-          };
-
-          // Decrease health with random damage to one beast
-          setBeasts((prevBeasts) => {
-            const randomBeastIndex = Math.floor(
-              Math.random() * prevBeasts.length
-            );
-            const targetBeast = prevBeasts[randomBeastIndex];
-            const damage = Math.floor(Math.random() * 70) + 1; // Generate random damage
-
-            return prevBeasts.map((beast) => {
-              if (beast === targetBeast) {
-                const newHealth = Math.max(0, beast.health - damage);
-                if (newHealth === 0 && beast.id === "enemy") {
-                  setShowEnemyKilledModal(true);
-                  const randomBackgroundIndex = Math.floor(
-                    Math.random() * backgrounds.length
-                  );
-                  setBackground(backgrounds[randomBackgroundIndex]);
-                  setRightPlayerHealth((prevHealth) => {
-                    const updatedHealth = Math.max(0, prevHealth - 30);
-                    if (updatedHealth <= 0) {
-                      setShowWinModal(true);
-                      setShowPlayerArea(false);
-                    }
-                    return updatedHealth;
-                  });
-                  const randomImage =
-                    beastImages[Math.floor(Math.random() * beastImages.length)];
-                  const randomScale = Math.random() * 0.4 + 0.1; // Random scale between 0.1 and 0.3
-                  return {
-                    ...beast,
-                    health: 100,
-                    image: randomImage,
-                    scale: randomScale,
-
-                    // Maintain current x and y positions
-                    x: beast.x,
-                    y: beast.y,
-                  };
-                } else if (newHealth === 0 && beast.id === "player") {
-                  setShowPlayerKilledModal(true);
-                  const randomBackgroundIndex = Math.floor(
-                    Math.random() * backgrounds.length
-                  );
-                  setBackground(backgrounds[randomBackgroundIndex]);
-                  setLeftPlayerHealth((prevHealth) => {
-                    const updatedHealth = Math.max(0, prevHealth - 30);
-                    if (updatedHealth <= 0) {
-                      setShowGameOverModal(true);
-                      setShowPlayerArea(false);
-                    }
-                    return updatedHealth;
-                  });
-                }
-                return {
-                  ...beast,
-                  health: newHealth,
-                  x: beast.x,
-                  y: beast.y,
-                  isHit: true,
-                }; // Maintain position
-              } else {
-                return beast; // Keep other beasts unchanged
-              }
-            });
-          });
-          // Reset the hit state after a brief moment
-          setTimeout(() => {
-            setBeasts((prevBeasts) => {
-              return prevBeasts.map((beast) => {
-                if (beast.id === "player" || beast.id === "enemy") {
-                  return { ...beast, isHit: false };
-                }
-                return beast;
-              });
-            });
-          }, 1500); // Adjust the duration as needed (300ms for example)
-        }
-      }
-    };
-    if (!showModal) {
+    if (!showModal || !showEnemyKilledModal || !showPlayerKilledModal) {
       ticker.add(update);
     } else {
       ticker.remove(update); // Stop the ticker when modal is shown
@@ -238,7 +247,7 @@ function App() {
     return () => {
       ticker.remove(update);
     };
-  }, [showModal, leftPlayerHealth, rightPlayerHealth]);
+  }, [showModal, leftPlayerHealth, rightPlayerHealth, paused]);
 
   // Set up random movement intervals for the right beast
   useEffect(() => {
@@ -294,6 +303,7 @@ function App() {
   };
 
   const handleNextBattle = () => {
+    setPaused(false);
     setShowEnemyKilledModal(false);
     setShowPlayerKilledModal(false);
     setShowWinModal(false);
@@ -313,6 +323,7 @@ function App() {
   };
 
   const handleAttack = () => {
+    console.log("attacking");
     setplayerXVelocity(4);
   };
   const handleJump = () => {
@@ -324,7 +335,11 @@ function App() {
       prevBeasts.map((beast) => {
         if (beast.id === "player") {
           if (image !== jesterDawg) {
-            return { ...beast, image: image, scale: window.innerWidth > 768 ? 0.6 : 0.35 };
+            return {
+              ...beast,
+              image: image,
+              scale: window.innerWidth > 768 ? 0.6 : 0.35,
+            };
           } else {
             return { ...beast, image: image };
           }
@@ -335,6 +350,7 @@ function App() {
     );
   };
   const handleNewGame = () => {
+    setPaused(false);
     setLeftPlayerHealth(100);
     setRightPlayerHealth(100);
     setShowEnemyKilledModal(false);
@@ -560,7 +576,8 @@ function App() {
                     stageHeight={stageHeight}
                     flip={beast.flip}
                     health={beast.health}
-                    isHit = {beast.isHit}
+                    isHit={beast.isHit}
+                    attacking={beast.attacking}
                   />
                 ))}
               </Container>

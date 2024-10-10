@@ -3,13 +3,13 @@ import * as React from "react";
 import { Sprite, Text, Container, Graphics } from "@pixi/react";
 import { useState, useImperativeHandle, useRef, useEffect } from "react";
 
-
 const MedievalBeast = React.forwardRef((props, ref) => {
   const {
     image,
     stageWidth,
     stageHeight,
     isHit,
+    attacking,
     onHealthChange,
     health,
     flip,
@@ -22,19 +22,18 @@ const MedievalBeast = React.forwardRef((props, ref) => {
   const spriteRef = useRef(); // Add a ref for the Sprite
   const [spriteX, setSpiteX] = useState(x);
   const [spriteY, setSpiteY] = useState(y);
-    // Set scale for Y-axis flip
+  // Set scale for Y-axis flip
   //const bind = useDrag({ x, y });
-/*
+  /*
   const velocity = useRef({
     x: Math.random() * 2 - 1,
     y: Math.random() * 2 - 1,
   });
 */
-const velocity = useRef({x: 0, y: 0})
-
+  const velocity = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
-
+    console.log(attacking);
     if (ref.current) {
       ref.current.velocity = velocity.current;
     }
@@ -45,10 +44,9 @@ const velocity = useRef({x: 0, y: 0})
       }
       const healthBar = healthBarRef.current;
       if (healthBar) {
-
         healthBar.clear();
         // Draw white background
-        healthBar.beginFill("white") // White background
+        healthBar.beginFill("white"); // White background
         healthBar.drawRect(0, 0, 100, 10); // Background width
         healthBar.endFill();
 
@@ -59,6 +57,8 @@ const velocity = useRef({x: 0, y: 0})
 
       if (sprite) {
         // Move the sprite
+        // Set velocity if attacking
+
         sprite.x += velocity.current.x;
         sprite.y += velocity.current.y;
 
@@ -83,18 +83,27 @@ const velocity = useRef({x: 0, y: 0})
     };
   }, [ref, stageWidth, stageHeight, health]);
 
-
-
   return (
     <Container>
-      <Sprite ref={ref} image={image} {...props}   tint={isHit ? (0xFf0000) : (0xffffff)}  />
-      {isHit &&(
+      <Sprite
+        ref={ref}
+        image={image}
+        {...props}
+        tint={isHit ? 0xff0000 : 0xffffff}
+      />
+      {isHit && (
         <Text
-        text={"Beast Hit"}
-        x={spriteX}
-        y={spriteY - 80}
-        style={{ fill: 0xFf0000, fontFamily: "Jacquard 12",  stroke: 0xffffff,   strokeThickness: 5,  dropShadowColor: '#ccced2',}}
-        scale={0.8}
+          text={"Beast Hit"}
+          x={spriteX}
+          y={spriteY - 80}
+          style={{
+            fill: 0xff0000,
+            fontFamily: "Jacquard 12",
+            stroke: 0xffffff,
+            strokeThickness: 5,
+            dropShadowColor: "#ccced2",
+          }}
+          scale={0.8}
         />
       )}
       <Container>
@@ -104,10 +113,14 @@ const velocity = useRef({x: 0, y: 0})
           text={`Health: ${health}`}
           x={spriteX}
           y={spriteY - 40}
-          style={{ fill: 0x000000, fontFamily: "Jacquard 12",  stroke: 0xffffff,   strokeThickness: 5,  dropShadowColor: '#ccced2',}}
+          style={{
+            fill: 0x000000,
+            fontFamily: "Jacquard 12",
+            stroke: 0xffffff,
+            strokeThickness: 5,
+            dropShadowColor: "#ccced2",
+          }}
           scale={0.8}
-          
-
         />
       </Container>
     </Container>

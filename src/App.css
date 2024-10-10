@@ -76,7 +76,7 @@ button{
 .jumpButton{
   position: absolute;
   left: 20%;
-  top:25%;
+  top:20%;
   transform: translate(-50%, -50%);
   z-index: 800;
   cursor: url('cursor_outline_yellow.png'), auto;
@@ -109,22 +109,23 @@ button:hover {
   top:-2%;
 }
 .ribbon {
-  position: absolute;
-  bottom: 0%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  height: 5rem;
+  height: auto; /* Maintain aspect ratio */
+  width: 100%;
 }
 .titleContainer{
   text-align: center;
+  position: relative;
+  display: inline-block; /* Ensures the container only takes up as much space as needed */
 }
 .title {
   position: absolute;
-  bottom: 7%;
-  font-size: 25px;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white; /* Assuming the ribbon is a dark color */
+  top: -10%; /* Center vertically */
+  font-size: 40px;
+  text-wrap: nowrap;
+  left: 50%; /* Center horizontally */
+  transform: translate(-50%, -30%); /* Adjust to truly center */
+  color: white; /* Change as necessary for visibility */
+  text-align: center; /* Center the text */
 }
 .playerArea{
   margin-top:-3rem;
@@ -264,5 +265,10 @@ button:hover {
   }
   .playerBeast{
     height: 8vh;
+  }
+}
+@media (max-height: 1100px) {
+  .title{
+    bottom: 9%;
   }
 }

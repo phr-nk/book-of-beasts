@@ -262,6 +262,7 @@ button:hover {
   .title{
     text-wrap:nowrap;
     bottom: 10%;
+    font-size: 25px;
   }
   .playerBeast{
     height: 8vh;

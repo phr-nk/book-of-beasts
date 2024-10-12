@@ -52,7 +52,7 @@ function App() {
   const stageWidth =
     window.innerWidth > 768 ? window.innerWidth / 3 : window.innerWidth / 1.2;
   const stageHeight =
-    window.innerWidth > 768 ? window.innerHeight / 2 : window.innerHeight / 4;
+    window.innerWidth > 768 ? window.innerHeight / 2 : window.innerHeight / 3;
   const [playerXVelocity, setplayerXVelocity] = useState(0);
   const [playerYVelocity, setplayerYVelocity] = useState(0);
   const [enemyXVelocity, setEnemyXVelocity] = useState(0);
@@ -143,8 +143,10 @@ function App() {
       }
       // Check for collision between the two beasts
       if (checkCollision(playerSprite, enemySprite)) {
-        setplayerXVelocity(0);
-        setplayerYVelocity(0);
+        playerRef.current.velocity.x = 0;
+        playerRef.current.velocity.y = 0;
+        enemyRef.current.velocity.x = 0;
+        enemyRef.current.velocity.y = 0;
         beasts.find((beast) => beast.id === "player").velocity = {
           x: 0,
           y: 0,
@@ -165,6 +167,10 @@ function App() {
               if (newHealth === 0 && beast.id === "enemy") {
                 setPaused(true);
                 setShowEnemyKilledModal(true);
+                playerRef.current.velocity.x = 0;
+                playerRef.current.velocity.y = 0;
+                enemyRef.current.velocity.x = 0;
+                enemyRef.current.velocity.y = 0;
                 const randomBackgroundIndex = Math.floor(
                   Math.random() * backgrounds.length
                 );
@@ -195,6 +201,10 @@ function App() {
               } else if (newHealth === 0 && beast.id === "player") {
                 setPaused(true);
                 setShowPlayerKilledModal(true);
+                playerRef.current.velocity.x = 0;
+                playerRef.current.velocity.y = 0;
+                enemyRef.current.velocity.x = 0;
+                enemyRef.current.velocity.y = 0;
                 const randomBackgroundIndex = Math.floor(
                   Math.random() * backgrounds.length
                 );
@@ -303,6 +313,10 @@ function App() {
   };
 
   const handleNextBattle = () => {
+    playerRef.current.velocity.x = 0;
+    playerRef.current.velocity.y = 0;
+    enemyRef.current.velocity.x = 0;
+    enemyRef.current.velocity.y = 0;
     setPaused(false);
     setShowEnemyKilledModal(false);
     setShowPlayerKilledModal(false);
@@ -323,11 +337,10 @@ function App() {
   };
 
   const handleAttack = () => {
-    console.log("attacking");
-    setplayerXVelocity(4);
+    playerRef.current.velocity.x = 2;
   };
   const handleJump = () => {
-    setplayerYVelocity(-4);
+    playerRef.current.velocity.y = -2;
   };
   const handleBeastSelect = (image) => {
     setSelected(image); // Toggle the state
@@ -394,8 +407,8 @@ function App() {
   const handleRightBeastMove = () => {
     const randomXVelocity = (Math.random() - 0.5) * 4; // Random velocity between -2 and 2
     const randomYVelocity = (Math.random() - 0.5) * 4; // Random velocity between -2 and 2
-    setEnemyXVelocity(randomXVelocity);
-    setEnemyYVelocity(randomYVelocity);
+    enemyRef.current.velocity.x = randomXVelocity;
+    enemyRef.current.velocity.y = randomYVelocity;
   };
 
   return (
@@ -601,7 +614,7 @@ function App() {
         </div>
       </header>
 
-      <audio ref={audioRef} autoPlay onEnded={handleEnded}>
+      <audio ref={audioRef} muted={isMuted} autoPlay onEnded={handleEnded}>
         <source src={songs[currentSongIndex]} type="audio/mpeg" />
       </audio>
       <button onClick={handleMuteClick}>{isMuted ? "Unmute" : "Mute"}</button>

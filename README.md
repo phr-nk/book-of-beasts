@@ -1,7 +1,7 @@
 # A Book Of Beasts
 
 This project was created for the React Jam Fall 2024 competetion
-https://raw.githubusercontent.com/phr-nk/Storage/master/BookOfBeastsImages/starting-screen.JPG
+
 ![not](https://raw.githubusercontent.com/phr-nk/Storage/master/BookOfBeastsImages/starting-screen.JPG)
 
 

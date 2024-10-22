@@ -10,7 +10,7 @@ https://raw.githubusercontent.com/phr-nk/Storage/master/BookOfBeastsImages/start
 
 
 ## Game Play
-![com]([https://raw.githubusercontent.com/phr-nk/Storage/master/BookOfBeastsImages/bob-game.gif)
+![com](https://raw.githubusercontent.com/phr-nk/Storage/master/BookOfBeastsImages/bob-game.gif)
 
 
 
